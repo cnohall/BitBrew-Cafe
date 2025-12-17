@@ -1,8 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { Container } from "./components/Container";
-import Footer from "./components/Footer";
-import Header from "./components/Header";
-import { Section } from "./components/Section";
 import LandingScreen from "./screens/LandingScreen";
 import PaymentScreen from "./screens/PaymentScreen";
 import type { Screen } from "./types";
@@ -133,8 +129,6 @@ export default function BitBrewCafe() {
   };
 
   return (
-
-      
     <Layout>
       <div className="transition-screen w-full py-4 sm:py-8">
         {currentScreen === 'landing' && (
@@ -142,8 +136,7 @@ export default function BitBrewCafe() {
         )}
 
         {currentScreen === 'payment' && (
-          <PaymentScreen 
-            setCurrentScreen={setCurrentScreen} 
+          <PaymentScreen
             btcAddress={btcAddress} 
             loading={loading} 
             error={error} 

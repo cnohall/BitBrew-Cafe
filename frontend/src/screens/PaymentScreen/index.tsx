@@ -2,7 +2,6 @@ import type { ReactElement, JSXElementConstructor, ReactNode, ReactPortal, Key }
 import NordicButton from "../../components/NordicButton";
 
 interface PaymentScreenProps {
-  setCurrentScreen: (screen: string) => void;
   btcAddress: string;
   product: any;
   getQRCodeUrl: (address: string) => string;
