@@ -59,85 +59,31 @@ export default function BitBrewCafe() {
             setPaymentStatus(data.status);
             setTransactionData(data);
             
-            const statusMessages = {
-              0: 'Payment detected (unconfirmed)',
-              1: 'Payment confirming...',
-              2: 'Payment confirmed!'
-            };
-            addLog('success', statusMessages[data.status] || `Payment status: ${data.status}`, data);
+            // Move to confirmation screen on any valid payment detection (status >= 0)
+            if (data.status >= 0) {
+              addLog('success', `Payment detected with status: ${data.status}. Transitioning...`);
+              setTimeout(() => setCurrentScreen('confirmation'), 1500); // Slight delay for UX
+              
+              if (wsRef.current) {
+                wsRef.current.close();
+              }
+            }
           }
         } catch (err) {
           addLog('error', 'Error parsing WebSocket message', event.data);
         }
       };
 
-      ws.onerror = (error) => {
-        setWsStatus('error');
-        addLog('error', 'WebSocket error occurred');
-      };
-
-      ws.onclose = () => {
-        setWsStatus('disconnected');
-        addLog('info', 'WebSocket connection closed');
-      };
+      ws.onerror = () => setWsStatus('error');
+      ws.onclose = () => setWsStatus('disconnected');
     };
 
     connectWebSocket();
 
     return () => {
-      if (wsRef.current) {
-        wsRef.current.close();
-        wsRef.current = null;
-      }
+      if (wsRef.current) wsRef.current.close();
     };
   }, [btcAddress]);
-
-  // Poll order status from server
-  useEffect(() => {
-    if (!btcAddress || currentScreen === 'confirmation') return;
-
-    const checkOrderStatus = async () => {
-      try {
-        const response = await fetch(`http://localhost:3001/order_status/${btcAddress}`);
-        
-        if (response.ok) {
-          const data = await response.json();
-          setOrderData(data);
-          addLog('info', `Order status: ${data.status}`, data);
-          
-          // Show confirmation screen when order is confirmed by server
-          if (data.status === 'confirmed') {
-            setCurrentScreen('confirmation');
-            // Stop polling
-            if (pollIntervalRef.current) {
-              clearInterval(pollIntervalRef.current);
-              pollIntervalRef.current = null;
-            }
-            // Close WebSocket
-            if (wsRef.current) {
-              wsRef.current.close();
-              wsRef.current = null;
-            }
-          }
-        }
-      } catch (err) {
-        console.error('Error checking order status:', err);
-      }
-    };
-
-    // Check immediately
-    checkOrderStatus();
-
-    // Then poll every 5 seconds
-    pollIntervalRef.current = setInterval(checkOrderStatus, 5000);
-
-    return () => {
-      if (pollIntervalRef.current) {
-        clearInterval(pollIntervalRef.current);
-        pollIntervalRef.current = null;
-      }
-    };
-  }, [btcAddress, currentScreen]);
 
   const generateBitcoinAddress = async () => {
     setLoading(true);
@@ -249,7 +195,7 @@ export default function BitBrewCafe() {
           <Section>
             <div className="transition-screen">
               <ConfirmationScreen 
-                orderData={orderData}
+                btcAddress={btcAddress}
                 product={product}
               />
             </div>
