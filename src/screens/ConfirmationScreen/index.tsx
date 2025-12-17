@@ -39,7 +39,7 @@ const ConfirmationScreen = ({ btcAddress, product }: ConfirmationScreenProps) =>
   };
 
   return (
-    <main className="mx-auto px-4 py-12">
+    <main className="py-12">
       <div className="max-w-2xl mx-auto">
         <div className="text-center mb-8 animate-fade-in">
           <div className="inline-block p-6 bg-green-100 rounded-full mb-4">

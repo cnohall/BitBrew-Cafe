@@ -7,6 +7,7 @@ import LandingScreen from "./screens/LandingScreen";
 import PaymentScreen from "./screens/PaymentScreen";
 import type { Screen } from "./types";
 import ConfirmationScreen from "./screens/ConfirmationScreen";
+import Layout from "./components/Layout";
 
 export default function BitBrewCafe() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('landing');
@@ -18,9 +19,7 @@ export default function BitBrewCafe() {
   const [wsStatus, setWsStatus] = useState('disconnected');
   const [paymentStatus, setPaymentStatus] = useState(null);
   const [transactionData, setTransactionData] = useState(null);
-  const [orderData, setOrderData] = useState(null);
   const wsRef = useRef(null);
-  const pollIntervalRef = useRef(null);
   
   const product = {
     name: 'Ethiopian Yirgacheffe',
@@ -59,10 +58,9 @@ export default function BitBrewCafe() {
             setPaymentStatus(data.status);
             setTransactionData(data);
             
-            // Move to confirmation screen on any valid payment detection (status >= 0)
             if (data.status >= 0) {
               addLog('success', `Payment detected with status: ${data.status}. Transitioning...`);
-              setTimeout(() => setCurrentScreen('confirmation'), 1500); // Slight delay for UX
+              setTimeout(() => setCurrentScreen('confirmation'), 1500);
               
               if (wsRef.current) {
                 wsRef.current.close();
@@ -119,7 +117,6 @@ export default function BitBrewCafe() {
     setApiLog([]);
     setPaymentStatus(null);
     setTransactionData(null);
-    setOrderData(null);
     setWsStatus('disconnected');
     setBtcAddress('');
     setError('');
@@ -136,74 +133,39 @@ export default function BitBrewCafe() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      <style>{`
-        @keyframes fade-in {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        
-        .animate-fade-in {
-          animation: fade-in 0.6s ease-out;
-        }
-        
-        .transition-screen {
-          animation: fade-in 0.4s ease-out;
-        }
-      `}</style>
-      
-      <Header />
 
-      <Container>
+      
+    <Layout>
+      <div className="transition-screen w-full py-4 sm:py-8">
         {currentScreen === 'landing' && (
-          <Section>
-            <div className="transition-screen">
-              <LandingScreen onBuyClick={handleBuyClick} />
-            </div>
-          </Section>
+          <LandingScreen onBuyClick={handleBuyClick} />
         )}
 
         {currentScreen === 'payment' && (
-          <Section>
-            <div className="transition-screen">
-              <PaymentScreen 
-                setCurrentScreen={setCurrentScreen} 
-                btcAddress={btcAddress} 
-                loading={loading} 
-                error={error} 
-                showTechnicalDetails={showTechnicalDetails} 
-                apiLog={apiLog} 
-                getQRCodeUrl={getQRCodeUrl}
-                copyToClipboard={copyToClipboard}
-                setShowTechnicalDetails={setShowTechnicalDetails}
-                product={product}
-                wsStatus={wsStatus}
-                paymentStatus={paymentStatus || 0}
-                transactionData={transactionData}
-              />
-            </div>
-          </Section>
+          <PaymentScreen 
+            setCurrentScreen={setCurrentScreen} 
+            btcAddress={btcAddress} 
+            loading={loading} 
+            error={error} 
+            showTechnicalDetails={showTechnicalDetails} 
+            apiLog={apiLog} 
+            getQRCodeUrl={getQRCodeUrl}
+            copyToClipboard={copyToClipboard}
+            setShowTechnicalDetails={setShowTechnicalDetails}
+            product={product}
+            wsStatus={wsStatus}
+            paymentStatus={paymentStatus || 0}
+            transactionData={transactionData}
+          />
         )}
 
         {currentScreen === 'confirmation' && (
-          <Section>
-            <div className="transition-screen">
-              <ConfirmationScreen 
-                btcAddress={btcAddress}
-                product={product}
-              />
-            </div>
-          </Section>
+          <ConfirmationScreen 
+            btcAddress={btcAddress}
+            product={product}
+          />
         )}
-      </Container>
-
-      <Footer />
-    </div>
+      </div>
+    </Layout>
   );
 }

@@ -6,7 +6,7 @@ export default function LandingScreen(props: LandingScreenProps) {
   const { onBuyClick } = props;
 
   return (
-    <main className="max-w-7xl mx-auto px-4 py-16">
+    <main className="py-16">
       {/* Hero Section */}
       <div className="text-center mb-20">
         <h2 className="text-5xl font-bold text-gray-900 mb-4">

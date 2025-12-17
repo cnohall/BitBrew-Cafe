@@ -64,7 +64,7 @@ const PaymentScreen = ({
   };
 
   return (
-    <main className="mx-auto px-4 py-8">
+    <main className="py-8">
       <div className="mb-4">
         <NordicButton onClick={() => setCurrentScreen('landing')}>
           Back to Product
