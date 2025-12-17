@@ -1,1 +1,1 @@
-export type Screen = 'landing' | 'payment' | 'success' | 'error';
+export type Screen = 'landing' | 'payment' | 'confirmation' | 'error';
