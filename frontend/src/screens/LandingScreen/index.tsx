@@ -1,9 +1,7 @@
-interface LandingScreenProps {
-  onBuyClick: () => void;
-}
+import { useAppContext } from "../../context/AppContext";
 
-export default function LandingScreen(props: LandingScreenProps) {
-  const { onBuyClick } = props;
+export default function LandingScreen() {
+  const { handleBuyClick } = useAppContext();
 
   return (
     <main className="py-16">
@@ -58,7 +56,7 @@ export default function LandingScreen(props: LandingScreenProps) {
 
           {/* Buy Button */}
           <button
-            onClick={onBuyClick}
+            onClick={handleBuyClick}
             className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 px-8 rounded-lg transition-colors shadow-lg text-lg"
             style={{ backgroundColor: '#F7931A' }}
             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#E8830F'}

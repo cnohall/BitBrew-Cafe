@@ -1,12 +1,9 @@
 import { useEffect, useState } from "react";
 import NordicButton from "../../components/NordicButton";
+import { useAppContext } from "../../context/AppContext";
 
-interface ConfirmationScreenProps {
-  btcAddress: string;
-  product: any;
-}
-
-const ConfirmationScreen = ({ btcAddress, product }: ConfirmationScreenProps) => {
+const ConfirmationScreen = () => {
+  const { btcAddress, product, handleNewOrder } = useAppContext();
   const [orderData, setOrderData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -29,10 +26,6 @@ const ConfirmationScreen = ({ btcAddress, product }: ConfirmationScreenProps) =>
       fetchFinalStatus();
     }
   }, [btcAddress]);
-
-  const handleNewOrder = () => {
-    window.location.reload();
-  };
 
   const satoshisToBTC = (satoshis: number) => {
     return (satoshis / 100000000).toFixed(8);
