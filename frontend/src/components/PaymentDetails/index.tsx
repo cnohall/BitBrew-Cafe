@@ -12,6 +12,8 @@ const PaymentDetails = () => {
     paymentStatus,
   } = useAppContext();
 
+  
+
   return (
     <div className="lg:col-span-2">
       <div className="bg-white rounded-lg p-6 border border-gray-200 mb-6">

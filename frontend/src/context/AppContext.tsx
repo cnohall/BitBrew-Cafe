@@ -1,6 +1,6 @@
 import { createContext, useState, useCallback } from 'react';
 import type { ReactNode } from 'react';
-import type { Screen, AppContextType } from '../types';
+import type { AppContextType } from '../types';
 import { useWebSocket } from '../hooks/useWebSocket';
 
 // Create the context with a default value
@@ -8,7 +8,6 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 // Create a provider component
 export const AppProvider = ({ children }: { children: ReactNode }) => {
-  const [currentScreen, setCurrentScreen] = useState<Screen>('landing');
   const [btcAddress, setBtcAddress] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -28,15 +27,15 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const handlePaymentSuccess = useCallback(() => {
-    setTimeout(() => setCurrentScreen('confirmation'), 1500);
-  }, []);
+    addLog('success', 'Payment confirmed!');
+  }, [addLog]);
 
   const {
     wsStatus, paymentStatus, transactionData,
     setWsStatus, setPaymentStatus, setTransactionData
   } = useWebSocket(btcAddress, addLog, handlePaymentSuccess);
 
-  const generateBitcoinAddress = async () => {
+  const generateBitcoinAddress = useCallback(async () => {
     setLoading(true);
     setError('');
     addLog('info', 'Initiating API call to backend...');
@@ -63,10 +62,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [addLog]);
 
-  const handleBuyClick = () => {
-    setCurrentScreen('payment');
+  const handleBuyClick = useCallback(() => {
     setApiLog([]);
     setPaymentStatus(null);
     setTransactionData(null);
@@ -74,19 +72,18 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     setBtcAddress('');
     setError('');
     generateBitcoinAddress();
-  };
+  }, [generateBitcoinAddress, setPaymentStatus, setTransactionData, setWsStatus]);
 
-  const getQRCodeUrl = (address: string) => {
+  const getQRCodeUrl = useCallback((address: string) => {
     return `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=bitcoin:${address}?amount=${product.priceBTC}`;
-  };
+  }, [product.priceBTC]);
 
-  const copyToClipboard = (text: string) => {
+  const copyToClipboard = useCallback((text: string) => {
     navigator.clipboard.writeText(text);
     addLog('info', 'Address copied to clipboard');
-  };
+  }, [addLog]);
 
-  const handleNewOrder = () => {
-    setCurrentScreen('landing');
+  const handleNewOrder = useCallback(() => {
     setBtcAddress('');
     setApiLog([]);
     setPaymentStatus(null);
@@ -94,11 +91,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     setWsStatus('disconnected');
     setError('');
     setLoading(false);
-  };
+  }, [setPaymentStatus, setTransactionData, setWsStatus]);
 
   const value = {
-    currentScreen,
-    setCurrentScreen,
     btcAddress,
     loading,
     error,

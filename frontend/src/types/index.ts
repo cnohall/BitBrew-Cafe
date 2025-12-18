@@ -1,8 +1,4 @@
-export type Screen = 'landing' | 'payment' | 'confirmation' | 'error';
-
 export interface AppContextType {
-  currentScreen: Screen;
-  setCurrentScreen: (screen: Screen) => void;
   btcAddress: string;
   loading: boolean;
   error: string;

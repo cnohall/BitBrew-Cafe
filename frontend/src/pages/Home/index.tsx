@@ -1,7 +1,14 @@
+import { useNavigate } from "react-router-dom";
 import { useAppContext } from "../../hooks/useAppContext";
 
-export default function LandingScreen() {
+export default function Home() {
   const { handleBuyClick } = useAppContext();
+  const navigate = useNavigate();
+
+  const onBuyClick = () => {
+    handleBuyClick(); // Resets state, generates address
+    navigate('/payment'); // Navigate to payment
+  };
 
   return (
     <main className="py-16">
@@ -56,7 +63,7 @@ export default function LandingScreen() {
 
           {/* Buy Button */}
           <button
-            onClick={handleBuyClick}
+            onClick={onBuyClick}
             className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 px-8 rounded-lg transition-colors shadow-lg text-lg"
             style={{ backgroundColor: '#F7931A' }}
             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#E8830F'}

@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import NordicButton from "../../components/NordicButton";
 import { useAppContext } from "../../hooks/useAppContext";
+import { useNavigate } from "react-router-dom";
 
-const ConfirmationScreen = () => {
+const Confirmation = () => {
   const { btcAddress, product, handleNewOrder } = useAppContext();
   const [orderData, setOrderData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchFinalStatus = async () => {
@@ -29,6 +31,11 @@ const ConfirmationScreen = () => {
 
   const satoshisToBTC = (satoshis: number) => {
     return (satoshis / 100000000).toFixed(8);
+  };
+
+  const onNewOrder = () => {
+    handleNewOrder();
+    navigate("/");
   };
 
   return (
@@ -100,11 +107,11 @@ const ConfirmationScreen = () => {
         )}
 
         <div className="flex justify-center">
-          <NordicButton onClick={handleNewOrder}>Place Another Order</NordicButton>
+          <NordicButton onClick={onNewOrder}>Place Another Order</NordicButton>
         </div>
       </div>
     </main>
   );
 };
 
-export default ConfirmationScreen;
+export default Confirmation;

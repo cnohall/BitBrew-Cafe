@@ -1,19 +1,32 @@
-import LandingScreen from "./screens/LandingScreen";
-import PaymentScreen from "./screens/PaymentScreen";
-import ConfirmationScreen from "./screens/ConfirmationScreen";
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from "./components/Layout";
-import { useAppContext } from "./hooks/useAppContext";
+import { AppProvider } from "./context/AppContext"; // Adjust path as needed
+import Home from './pages/Home';
+import Checkout from './pages/Checkout';
+import Confirmation from './pages/Confirmation';
 
-export default function BitBrewCafe() {
-  const { currentScreen } = useAppContext();
-
+function AppRoutes() {
   return (
     <Layout>
       <div className="transition-screen w-full py-4 sm:py-8">
-        {currentScreen === 'landing' && <LandingScreen />}
-        {currentScreen === 'payment' && <PaymentScreen />}
-        {currentScreen === 'confirmation' && <ConfirmationScreen />}
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/payment" element={<Checkout />} />
+          <Route path="/confirmation" element={<Confirmation />} />
+          {/* Redirect any unknown routes to landing */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </div>
     </Layout>
+  );
+}
+
+export default function BitBrewCafe() {
+  return (
+    <BrowserRouter>
+      <AppProvider>
+        <AppRoutes />
+      </AppProvider>
+    </BrowserRouter>
   );
 }
