@@ -2,7 +2,7 @@ import LandingScreen from "./screens/LandingScreen";
 import PaymentScreen from "./screens/PaymentScreen";
 import ConfirmationScreen from "./screens/ConfirmationScreen";
 import Layout from "./components/Layout";
-import { useAppContext } from "./context/AppContext";
+import { useAppContext } from "./hooks/useAppContext";
 
 export default function BitBrewCafe() {
   const { currentScreen } = useAppContext();

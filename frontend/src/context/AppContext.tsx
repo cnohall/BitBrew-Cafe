@@ -1,5 +1,7 @@
-import { createContext, useContext, useState, useRef, useEffect, ReactNode } from 'react';
+import { createContext, useState, useCallback } from 'react';
+import type { ReactNode } from 'react';
 import type { Screen, AppContextType } from '../types';
+import { useWebSocket } from '../hooks/useWebSocket';
 
 // Create the context with a default value
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -12,10 +14,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [error, setError] = useState('');
   const [showTechnicalDetails, setShowTechnicalDetails] = useState(false);
   const [apiLog, setApiLog] = useState<any[]>([]);
-  const [wsStatus, setWsStatus] = useState('disconnected');
-  const [paymentStatus, setPaymentStatus] = useState<number | null>(null);
-  const [transactionData, setTransactionData] = useState(null);
-  const wsRef = useRef<WebSocket | null>(null);
   
   const product = {
     name: 'Ethiopian Yirgacheffe',
@@ -24,59 +22,19 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     priceBTC: 0.00026
   };
 
-  const addLog = (type: string, message: string, data: any = null) => {
+  const addLog = useCallback((type: string, message: string, data: any = null) => {
     const timestamp = new Date().toLocaleTimeString();
     setApiLog(prev => [...prev, { timestamp, type, message, data }]);
-  };
+  }, []);
 
-  useEffect(() => {
-    if (!btcAddress) return;
+  const handlePaymentSuccess = useCallback(() => {
+    setTimeout(() => setCurrentScreen('confirmation'), 1500);
+  }, []);
 
-    const connectWebSocket = () => {
-      setWsStatus('connecting');
-      addLog('info', `Connecting to WebSocket: wss://www.blockonomics.co/payment/${btcAddress}`);
-
-      const ws = new WebSocket(`wss://www.blockonomics.co/payment/${btcAddress}`);
-      wsRef.current = ws;
-
-      ws.onopen = () => {
-        setWsStatus('connected');
-        addLog('success', 'WebSocket connected - Listening for payment...');
-      };
-
-      ws.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          addLog('websocket', 'Received WebSocket message', data);
-          
-          if (data.status !== undefined) {
-            setPaymentStatus(data.status);
-            setTransactionData(data);
-            
-            if (data.status >= 0) {
-              addLog('success', `Payment detected with status: ${data.status}. Transitioning...`);
-              setTimeout(() => setCurrentScreen('confirmation'), 1500);
-              
-              if (wsRef.current) {
-                wsRef.current.close();
-              }
-            }
-          }
-        } catch (err) {
-          addLog('error', 'Error parsing WebSocket message', event.data);
-        }
-      };
-
-      ws.onerror = () => setWsStatus('error');
-      ws.onclose = () => setWsStatus('disconnected');
-    };
-
-    connectWebSocket();
-
-    return () => {
-      if (wsRef.current) wsRef.current.close();
-    };
-  }, [btcAddress]);
+  const {
+    wsStatus, paymentStatus, transactionData,
+    setWsStatus, setPaymentStatus, setTransactionData
+  } = useWebSocket(btcAddress, addLog, handlePaymentSuccess);
 
   const generateBitcoinAddress = async () => {
     setLoading(true);
@@ -162,11 +120,4 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };
 
-// Create a custom hook to use the AppContext
-export const useAppContext = () => {
-  const context = useContext(AppContext);
-  if (context === undefined) {
-    throw new Error('useAppContext must be used within an AppProvider');
-  }
-  return context;
-};
+export default AppContext;

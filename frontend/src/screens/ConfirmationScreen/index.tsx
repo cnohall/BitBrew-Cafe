@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import NordicButton from "../../components/NordicButton";
-import { useAppContext } from "../../context/AppContext";
+import { useAppContext } from "../../hooks/useAppContext";
 
 const ConfirmationScreen = () => {
   const { btcAddress, product, handleNewOrder } = useAppContext();
