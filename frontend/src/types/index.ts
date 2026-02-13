@@ -1,23 +1,29 @@
 export interface AppContextType {
-  btcAddress: string;
+  usdtAddress: string;
   loading: boolean;
   error: string;
-  showTechnicalDetails: boolean;
-  setShowTechnicalDetails: (show: boolean) => void;
-  apiLog: any[];
-  addLog: (type: string, message: string, data?: any) => void;
-  wsStatus: string;
-  paymentStatus: number | null;
-  transactionData: any;
+  txSubmitted: boolean;
   product: {
     name: string;
     description: string;
     priceUSD: number;
-    priceBTC: number;
+    priceUSDT: number;
   };
-  generateBitcoinAddress: () => Promise<void>;
+  generateUSDTAddress: () => Promise<void>;
   handleBuyClick: () => void;
-  getQRCodeUrl: (address: string) => string;
-  copyToClipboard: (text: string) => void;
   handleNewOrder: () => void;
+  submitTransaction: (txhash: string) => Promise<{ success: boolean; error?: string }>;
+}
+
+// Type declaration for Blockonomics web3-payment custom element
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      'web3-payment': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
+        order_amount?: string;
+        receive_address?: string;
+        testnet?: string;
+      };
+    }
+  }
 }

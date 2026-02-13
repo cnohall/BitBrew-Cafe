@@ -9,22 +9,46 @@ const PORT = 3001;
 app.use(cors({ origin: "http://localhost:5173" }));
 app.use(express.json());
 
-// 1. Generate new address and create order
-app.post("/new_address", async (req, res) => {
+
+
+// 2.5. Monitor USDT Transaction (new endpoint)
+app.post("/monitor_usdt_transaction", async (req, res) => {
   try {
-    const response = await fetch(
-      "https://www.blockonomics.co/api/new_address?match_callback=localhost:3001/callback&crypto=BTC",
-      {
-        method: "POST",
-        headers: {
-          accept: "application/json",
-          authorization: `Bearer ${process.env.BLOCKONOMICS_API_KEY}`,
-        },
+    const { txhash, usdtAddress } = req.body;
+
+    if (!txhash || !usdtAddress) {
+      return res.status(400).json({ error: "Missing txhash or usdtAddress" });
+    }
+
+    // Create order if it doesn't exist yet
+    try {
+      await db.createOrder(usdtAddress);
+    } catch (createErr) {
+      if (!createErr.message.includes("UNIQUE constraint failed")) {
+        throw createErr;
       }
-    );
+    }
+
+    // Store the txhash in our DB as txid (matches Blockonomics callback field name)
+    await db.updateOrder(usdtAddress, { txid: txhash });
+
+    // Submit to Blockonomics for monitoring
+    const response = await fetch("https://www.blockonomics.co/api/monitor_tx", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.BLOCKONOMICS_API_KEY}`,
+      },
+      body: JSON.stringify({
+        txhash,
+        crypto: "USDT",
+        match_callback: "ngrok-free", // Must match part of your Store callback URL in Blockonomics dashboard
+        testnet: 1, // 0 for mainnet, 1 for Sepolia testnet
+      }),
+    });
 
     const responseText = await response.text();
-    console.log("Blockonomics Response:", response.status, responseText);
+    console.log("Blockonomics Monitor TX Response:", response.status, responseText);
 
     if (!response.ok) {
       let errorMsg = responseText;
@@ -39,15 +63,10 @@ app.post("/new_address", async (req, res) => {
       });
     }
 
-    const data = JSON.parse(responseText);
-
-    // ADDED AWAIT: Database call is now a Promise
-    await db.createOrder(data.address);
-
-    console.log("New address generated:", data.address);
-    res.json(data);
+    console.log("Monitor TX registered successfully");
+    res.json({ success: true, message: "Transaction monitoring initiated" });
   } catch (err) {
-    console.error("Error generating address:", err);
+    console.error("Error monitoring USDT transaction:", err);
     res.status(500).json({ error: err.message });
   }
 });

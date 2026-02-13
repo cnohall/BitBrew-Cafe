@@ -15,7 +15,7 @@ export default function Home() {
       {/* Hero Section */}
       <div className="text-center mb-20">
         <h2 className="text-5xl font-bold text-gray-900 mb-4">
-          Premium coffee. Paid in Bitcoin.
+          Premium coffee. Paid with crypto.
         </h2>
         <p className="text-xl text-gray-600">
           Experience the future of payments with exceptional coffee
@@ -69,7 +69,7 @@ export default function Home() {
             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#E8830F'}
             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#F7931A'}
           >
-            Buy with Bitcoin ₿
+            Buy with USDT - $24.99
           </button>
 
           <p className="text-sm text-gray-500 text-center">

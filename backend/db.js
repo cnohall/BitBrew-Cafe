@@ -42,9 +42,16 @@ const db = {
 
   updateOrder: (address, data) => {
     return new Promise((resolve, reject) => {
+      const fields = [];
+      const values = [];
+      for (const [key, val] of Object.entries(data)) {
+        fields.push(`${key} = ?`);
+        values.push(val);
+      }
+      values.push(address);
       dbRaw.run(
-        `UPDATE orders SET status = ?, txid = ?, value = ?, confirmations = ? WHERE address = ?`,
-        [data.status, data.txid, data.value, data.confirmations, address],
+        `UPDATE orders SET ${fields.join(', ')} WHERE address = ?`,
+        values,
         (err) => {
           if (err) reject(err);
           else resolve();

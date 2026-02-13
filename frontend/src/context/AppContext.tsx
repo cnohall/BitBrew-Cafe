@@ -1,115 +1,77 @@
 import { createContext, useState, useCallback } from 'react';
 import type { ReactNode } from 'react';
 import type { AppContextType } from '../types';
-import { useWebSocket } from '../hooks/useWebSocket';
 
-// Create the context with a default value
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-// Create a provider component
 export const AppProvider = ({ children }: { children: ReactNode }) => {
-  const [btcAddress, setBtcAddress] = useState('');
+  const [usdtAddress, setUsdtAddress] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [showTechnicalDetails, setShowTechnicalDetails] = useState(false);
-  const [apiLog, setApiLog] = useState<any[]>([]);
-  
+  const [txSubmitted, setTxSubmitted] = useState(false);
+
   const product = {
     name: 'Ethiopian Yirgacheffe',
     description: 'Premium Single Origin',
     priceUSD: 24.99,
-    priceBTC: 0.00026
+    priceUSDT: 24.99
   };
 
-  const addLog = useCallback((type: string, message: string, data: any = null) => {
-    const timestamp = new Date().toLocaleTimeString();
-    setApiLog(prev => [...prev, { timestamp, type, message, data }]);
-  }, []);
-
-  const handlePaymentSuccess = useCallback(() => {
-    addLog('success', 'Payment confirmed!');
-  }, [addLog]);
-
-  const {
-    wsStatus, paymentStatus, transactionData,
-    setWsStatus, setPaymentStatus, setTransactionData
-  } = useWebSocket(btcAddress, addLog, handlePaymentSuccess);
-
-  const generateBitcoinAddress = useCallback(async () => {
+  // In production, call Blockonomics /new_address API to generate a fresh address per order.
+  // For this tutorial, we use a hardcoded address for simplicity.
+  const generateUSDTAddress = useCallback(async () => {
     setLoading(true);
     setError('');
-    addLog('info', 'Initiating API call to backend...');
-
-    try {
-      const response = await fetch('http://localhost:3001/new_address', {
-        method: 'POST'
-      });
-
-      if (!response.ok) {
-        throw new Error(`API Error: ${response.status} ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      if (data.address) {
-        setBtcAddress(data.address);
-        addLog('success', `Bitcoin address generated: ${data.address}`);
-      } else {
-        throw new Error('No address returned from API');
-      }
-    } catch (err: any) {
-      setError(err.message);
-      addLog('error', `Error: ${err.message}`);
-    } finally {
-      setLoading(false);
-    }
-  }, [addLog]);
+    setUsdtAddress('0x5C0ed91604E92D7f488d62058293ce603BCC68eF');
+    setLoading(false);
+  }, []);
 
   const handleBuyClick = useCallback(() => {
-    setApiLog([]);
-    setPaymentStatus(null);
-    setTransactionData(null);
-    setWsStatus('disconnected');
-    setBtcAddress('');
+    setUsdtAddress('');
     setError('');
-    generateBitcoinAddress();
-  }, [generateBitcoinAddress, setPaymentStatus, setTransactionData, setWsStatus]);
-
-  const getQRCodeUrl = useCallback((address: string) => {
-    return `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=bitcoin:${address}?amount=${product.priceBTC}`;
-  }, [product.priceBTC]);
-
-  const copyToClipboard = useCallback((text: string) => {
-    navigator.clipboard.writeText(text);
-    addLog('info', 'Address copied to clipboard');
-  }, [addLog]);
+    setTxSubmitted(false);
+    generateUSDTAddress();
+  }, [generateUSDTAddress]);
 
   const handleNewOrder = useCallback(() => {
-    setBtcAddress('');
-    setApiLog([]);
-    setPaymentStatus(null);
-    setTransactionData(null);
-    setWsStatus('disconnected');
+    setUsdtAddress('');
     setError('');
     setLoading(false);
-  }, [setPaymentStatus, setTransactionData, setWsStatus]);
+    setTxSubmitted(false);
+  }, []);
 
-  const value = {
-    btcAddress,
+  const submitTransaction = useCallback(async (txhash: string) => {
+    try {
+      const response = await fetch('http://localhost:3001/monitor_usdt_transaction', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ txhash, usdtAddress }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to monitor transaction.');
+      }
+
+      console.log(`Transaction ${txhash} submitted for monitoring.`);
+      setTxSubmitted(true);
+      return { success: true };
+    } catch (err: any) {
+      console.error(`Error submitting transaction: ${err.message}`);
+      return { success: false, error: err.message };
+    }
+  }, [usdtAddress]);
+
+  const value: AppContextType = {
+    usdtAddress,
     loading,
     error,
-    showTechnicalDetails,
-    setShowTechnicalDetails,
-    apiLog,
-    addLog,
-    wsStatus,
-    paymentStatus,
-    transactionData,
+    txSubmitted,
     product,
-    generateBitcoinAddress,
+    generateUSDTAddress,
     handleBuyClick,
-    getQRCodeUrl,
-    copyToClipboard,
     handleNewOrder,
+    submitTransaction,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
