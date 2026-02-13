@@ -72,10 +72,11 @@ app.post("/monitor_usdt_transaction", async (req, res) => {
 });
 
 // 2. Blockonomics Callback (Updated to async)
-app.post("/callback", async (req, res) => {
-  console.log("Received callback from Blockonomics:", req.body);
+app.get("/callback", async (req, res) => {
+  // Changed req.body to req.query for GET requests
+  console.log("Received callback from Blockonomics:", req.query);
 
-  const { addr, status, value, txid } = req.body;
+  const { addr, status, value, txid } = req.query;
 
   // ADDED AWAIT
   const order = await db.getOrder(addr);
@@ -86,10 +87,13 @@ app.post("/callback", async (req, res) => {
   }
 
   let orderStatus = "pending";
-  if (status === 0) {
+  // Note: Ensure 'status' is treated as a number, as query params are strings by default
+  const statusInt = parseInt(status, 10); 
+
+  if (statusInt === 0) {
     orderStatus = "paid";
     console.log("Payment detected (unconfirmed)");
-  } else if (status >= 2) {
+  } else if (statusInt >= 2) {
     orderStatus = "confirmed";
     console.log("Payment confirmed");
   } else {
@@ -101,7 +105,7 @@ app.post("/callback", async (req, res) => {
     status: orderStatus,
     txid,
     value,
-    confirmations: status,
+    confirmations: statusInt,
   });
 
   console.log("Order updated");
