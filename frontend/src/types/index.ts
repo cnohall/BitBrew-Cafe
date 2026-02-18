@@ -1,6 +1,5 @@
 export interface AppContextType {
   usdtAddress: string;
-  loading: boolean;
   error: string;
   txSubmitted: boolean;
   product: {
@@ -9,8 +8,6 @@ export interface AppContextType {
     priceUSD: number;
     priceUSDT: number;
   };
-  generateUSDTAddress: () => Promise<void>;
-  handleBuyClick: () => void;
   handleNewOrder: () => void;
   submitTransaction: (txhash: string) => Promise<{ success: boolean; error?: string }>;
 }

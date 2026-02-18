@@ -5,7 +5,6 @@ const PaymentDetails = () => {
   const {
     usdtAddress,
     product,
-    loading,
     error,
     submitTransaction,
   } = useAppContext();
@@ -33,13 +32,7 @@ const PaymentDetails = () => {
           </div>
         )}
 
-        {loading && (
-          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <span className="text-blue-900 font-medium">Generating payment address...</span>
-          </div>
-        )}
-
-        {usdtAddress && !loading && (
+        {usdtAddress && (
           <>
             {/* Amount to Pay */}
             <div className="mb-6">

@@ -2,12 +2,12 @@ import { useNavigate } from "react-router-dom";
 import { useAppContext } from "../../hooks/useAppContext";
 
 export default function Home() {
-  const { handleBuyClick } = useAppContext();
+  const { handleNewOrder } = useAppContext();
   const navigate = useNavigate();
 
   const onBuyClick = () => {
-    handleBuyClick(); // Resets state, generates address
-    navigate('/payment'); // Navigate to payment
+    handleNewOrder();
+    navigate('/payment');
   };
 
   return (
